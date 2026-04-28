@@ -36,6 +36,28 @@ Descarga el instalador más reciente en la sección [**Releases**](../../release
 
 ---
 
+## 📸 Capturas de pantalla
+
+### Pantalla principal
+![Inicio](screenshots/01-inicio.png)
+
+### Modo Cajero — controles restringidos
+![Cajero](screenshots/02-cajero.png)
+
+### Modo Admin — acceso completo
+![Admin](screenshots/03-admin.png)
+
+### PIN de seguridad
+![PIN](screenshots/04-pin.png)
+
+### Etiqueta generada
+![Etiqueta](screenshots/05-etiqueta.png)
+
+### Importar inventario CSV/Excel
+![Importar](screenshots/06-importar.png)
+
+---
+
 ## 🔄 Auto-actualizaciones
 
 Esta aplicación incluye un sistema de actualizaciones automáticas basado en `electron-updater`.  
@@ -46,4 +68,3 @@ Cuando se publica una nueva versión aquí en GitHub Releases, los usuarios inst
 ## 📄 Licencia
 
 Uso interno — Full Party, Uruapan, Michoacán 🎉
-
