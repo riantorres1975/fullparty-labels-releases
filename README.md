@@ -1,130 +1,356 @@
 <div align="center">
 
-# 🎉 Full Party Labels
+# Full Party Labels
 
-**Sistema de etiquetas con código de barras para cadena de tiendas de artículos para fiestas**
+**Sistema de etiquetas con codigo de barras para tiendas Full Party**
 
-![Version](https://img.shields.io/github/v/release/riantorres1975/fullparty-labels-releases?label=versión&color=7c3aed)
+![Version](https://img.shields.io/github/v/release/riantorres1975/fullparty-labels-releases?label=version&color=7c3aed)
 ![Platform](https://img.shields.io/badge/plataforma-Windows-blue?logo=windows)
 ![Electron](https://img.shields.io/badge/Electron-28-47848F?logo=electron&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)
 
 </div>
 
 ---
 
-## 🧩 El problema que resuelve
+## Que Resuelve
 
-Al manejar artículos de importación de origen chino, la mayoría llega **sin código de barras**, o peor aún, **productos distintos vienen con el mismo código**, lo que hacía imposible llevar un inventario confiable.
+Full Party Labels ayuda a manejar productos que llegan sin codigo de barras, o con codigos duplicados de fabrica. La app genera SKUs/EAN-13 unicos, sincroniza el catalogo entre sucursales usando Supabase y permite imprimir etiquetas PDF optimizadas para Brother QL-800.
 
-A esto se suma que la tienda opera con **múltiples sucursales**: era necesario que todas manejaran los mismos códigos para tener control real sobre lo que entra y sale en cada punto de venta.
-
-**Full Party Labels** resuelve esto generando códigos EAN-13 únicos por producto, sincronizando el catálogo en tiempo real entre sucursales a través de Supabase, y permitiendo imprimir etiquetas profesionales al instante desde cualquier PC de la tienda.
+La aplicacion es de escritorio con Electron, levanta un backend local FastAPI y guarda el catalogo en Supabase PostgreSQL.
 
 ---
 
-## 📦 Descargar
+## Stack
 
-Descarga el instalador más reciente en la sección [**Releases**](../../releases/latest).
-
----
-
-## 🖥️ Stack tecnológico
-
-| Capa | Tecnología |
-|------|-----------|
-| Desktop | Electron.js 28 + HTML5 + Tailwind CSS |
-| Backend local | FastAPI (Python 3.13) empaquetado con PyInstaller |
-| Base de datos | Supabase (PostgreSQL) — sincronización en tiempo real |
-| Impresora | Brother QL-800 — etiquetas 62×29mm |
-| Distribución | electron-builder + electron-updater (GitHub Releases) |
-
----
-
-## ✨ Funcionalidades
-
-- 🏷️ **Múltiples formatos de código de barras** — EAN-13, EAN-8, UPC-A y Code128
-- ⚡ **SKU auto-generado** — genera EAN-13 únicos si el producto no tiene código
-- 🖨️ **Impresión de etiquetas PDF** 62×29mm optimizadas para Brother QL-800
-- 👥 **Sistema de roles con PIN** — Modo Cajero (lectura/impresión) y Modo Admin (gestión completa)
-- 📊 **CRUD de productos** con búsqueda en tiempo real y paginación
-- 📥 **Importar/Exportar CSV y Excel** — carga masiva de catálogo
-- 🌐 **Multi-sucursal** — todas las PCs ven el mismo inventario vía Supabase
-- 📡 **Modo offline** — opera sin internet y sincroniza al reconectar
-- 🔄 **Auto-actualizaciones** — banner de nueva versión sin intervención del usuario
+| Capa | Tecnologia |
+|------|------------|
+| Desktop | Electron 28 + HTML + CSS + JS |
+| Frontend | Vanilla JS modular |
+| Backend local | FastAPI + SQLAlchemy |
+| Python | 3.12 recomendado |
+| Base de datos | Supabase PostgreSQL |
+| Storage | Supabase Storage (`product-images`) |
+| Etiquetas | ReportLab + python-barcode |
+| Tests | pytest + Vitest |
+| Lint | Ruff + ESLint |
+| Distribucion | electron-builder + electron-updater |
 
 ---
 
-## 📸 Capturas de pantalla
+## Cambios Recientes Importantes
 
-### Pantalla principal
-![Inicio](screenshots/01-inicio.png)
-
-### Modo Cajero — controles restringidos
-![Cajero](screenshots/02-cajero.png)
-
-### Modo Admin — acceso completo
-![Admin](screenshots/03-admin.png)
-
-### PIN de seguridad
-![PIN](screenshots/04-pin.png)
-
-### Etiqueta generada para Brother QL-800
-![Etiqueta](screenshots/05-etiqueta.png)
-
-### Importar inventario CSV/Excel
-![Importar](screenshots/06-importar.png)
+- API local protegida con token temporal `X-Fullparty-Token` entre Electron y FastAPI.
+- CORS restringido para evitar acceso abierto desde cualquier origen.
+- `preload.js` expone solo APIs especificas, no `shell`/`fs` genericos al renderer.
+- Productos con endpoint paginado `/products/page` para busqueda y filtros desde backend.
+- Navegacion de productos con teclado: flechas, `Home`, `End`, `Espacio`, `Enter` y `Ctrl+P`.
+- Migraciones movidas a `backend/migrations.py`.
+- Dependencias de desarrollo fijadas en `requirements-dev.txt`.
+- Utilidades frontend compartidas en `js/modules/shared-utils.js` y probadas con Vitest.
+- Cola offline guarda `operationId`, `attempts` y `lastError`.
+- `backend/servidor_etiquetas.exe` ya no se trackea en git; se genera al publicar.
 
 ---
 
-## 🏗️ Arquitectura
+## Estructura
 
+```text
+fullparty-etiquetas/
+|-- main.js                    # Electron main process y arranque del backend
+|-- preload.js                 # contextBridge seguro
+|-- index.html                 # UI principal
+|-- css/
+|   `-- styles.css
+|-- js/
+|   |-- app.js                 # Init y listeners
+|   |-- i18n.js
+|   |-- tailwind-cdn.js        # Tailwind local/offline
+|   |-- xlsx.full.min.js       # SheetJS local/offline
+|   `-- modules/
+|       |-- shared-utils.js    # Utilidades puras compartidas/testeables
+|       |-- state.js           # Estado, PIN, cola offline
+|       |-- api.js             # Fetch, auth local, reconexion
+|       |-- products.js        # Carga paginada, filtros, tabla
+|       |-- forms.js           # CRUD, formularios, imagenes
+|       |-- print.js           # PDF e impresion
+|       |-- io.js              # CSV/Excel, backup/restore
+|       |-- presence.js        # Heartbeat y usuarios conectados
+|       `-- ui.js              # Toasts, modales, shortcuts
+|-- servidor_etiquetas.py      # Entry point FastAPI
+|-- backend/
+|   |-- config.py              # .env, DB, constantes
+|   |-- migrations.py          # Migraciones simples de arranque
+|   |-- security.py            # Token local opcional
+|   |-- models.py              # SQLAlchemy
+|   |-- schemas.py             # Pydantic
+|   |-- barcode.py
+|   |-- image_utils.py
+|   |-- pdf_label.py
+|   `-- routes/
+|       |-- system.py
+|       |-- products.py
+|       |-- labels.py
+|       |-- images.py
+|       `-- presence.py
+|-- tests/
+|   |-- test_endpoints.py
+|   |-- test_pdf_label.py
+|   |-- test_validation.py
+|   `-- frontend/test_utils.test.js
+|-- requirements.txt
+|-- requirements-dev.txt
+|-- package.json
+|-- pnpm-lock.yaml
+|-- servidor_etiquetas.spec
+|-- build_exe.py
+|-- publicar.bat
+`-- .github/workflows/test.yml
 ```
-┌─────────────────────────────┐
-│   Electron (Renderer)       │  ← UI: HTML + Tailwind + Vanilla JS
-│   index.html / app.js       │     Modo offline con cola de sync
-└────────────┬────────────────┘
-             │ HTTP localhost:8000
-┌────────────▼────────────────┐
-│   FastAPI Backend           │  ← Python 3.13 compilado a .exe
-│   servidor_etiquetas.py     │     REST API + generación de PDFs
-│   (PyInstaller .exe)        │     con ReportLab + códigos de barras
-└────────────┬────────────────┘
-             │ SQLAlchemy + psycopg2
-┌────────────▼────────────────┐
-│   Supabase (PostgreSQL)     │  ← Base de datos en la nube
-│   products / presence       │     Sincronización multi-sucursal
-└─────────────────────────────┘
+
+---
+
+## Requisitos
+
+- Windows.
+- Python 3.12.
+- Node.js 22.13 o superior.
+- Corepack habilitado para usar `pnpm@11.1.2`.
+- Cuenta/proyecto Supabase.
+
+> No usar Python 3.14 con las dependencias fijadas actuales. Para CI y desarrollo se usa Python 3.12.
+
+---
+
+## Configuracion
+
+```powershell
+git clone https://github.com/riantorres1975/fullparty-etiquetas-supabase.git
+cd fullparty-etiquetas-supabase
+
+copy .env.example .env
+# Edita .env con DATABASE_URL, SUPABASE_URL y SUPABASE_KEY
+
+py -3.12 -m pip install -r requirements-dev.txt
+corepack enable
+corepack pnpm install --frozen-lockfile
 ```
 
----
+Ejecutar la app:
 
-## 🔧 Retos técnicos resueltos
+```powershell
+corepack pnpm start
+```
 
-**Productos sin código de barras**
-La mayoría del inventario importado de China no trae código. Se implementó un generador de EAN-13 con validación de dígito verificador y verificación de unicidad en base de datos antes de asignar.
-
-**Códigos duplicados en productos distintos**
-Productos diferentes llegaban con el mismo código de fábrica. Se forzó unicidad a nivel de base de datos y se permite sobreescribir con un SKU personalizado o auto-generado.
-
-**Operación sin internet**
-Las sucursales a veces pierden conexión. Se implementó una cola de operaciones en `localStorage` que se sincroniza automáticamente al recuperar la conexión, sin pérdida de datos.
-
-**Roles sin backend de autenticación**
-Para evitar que empleados borren productos o modifiquen precios por error, se implementó un sistema de roles (Cajero / Admin) con PIN local por PC, sin necesidad de servidor de autenticación.
-
-**Auto-actualizaciones en app de escritorio**
-Se configuró `electron-updater` con un repositorio público separado para los releases, manteniendo el código fuente en un repo privado y sin exponer credenciales dentro del instalador.
+Electron levanta automaticamente el backend local en `127.0.0.1:8000`.
 
 ---
 
-## 🔄 Auto-actualizaciones
+## Supabase
 
-Cada nueva versión publicada en GitHub Releases notifica automáticamente a todos los equipos instalados. El usuario ve un banner y puede instalar con un clic sin descargar nada manualmente.
+Crear tablas:
+
+```sql
+CREATE TABLE IF NOT EXISTS products (
+    id         SERIAL PRIMARY KEY,
+    sku        VARCHAR(50) UNIQUE NOT NULL,
+    name       VARCHAR(120) NOT NULL,
+    price      NUMERIC(10,2) NOT NULL,
+    image_url  VARCHAR(500),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS presence (
+    session_id VARCHAR(36) PRIMARY KEY,
+    ip         VARCHAR(45) NOT NULL,
+    last_seen  TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+Crear un bucket publico en Supabase Storage:
+
+```text
+product-images
+```
+
+La app revisa migraciones al arrancar:
+
+- `products.sku` a `VARCHAR(50)`.
+- `products.image_url` si no existe.
 
 ---
 
-## 📄 Licencia
+## Tests Y Lint
 
-Uso interno — Full Party, Uruapan, Michoacán 🎉
+```powershell
+# Backend
+py -3.12 -m pytest tests/ -v
+
+# Frontend
+corepack pnpm run test:frontend
+
+# Ruff
+py -3.12 -m ruff check .
+
+# ESLint
+corepack pnpm exec eslint main.js preload.js js/app.js js/modules/
+```
+
+Cobertura actual:
+
+- 64 tests Python.
+- 35 tests frontend.
+- Endpoints FastAPI.
+- Validaciones Pydantic.
+- PDF de etiquetas.
+- Barcodes.
+- Utilidades frontend reales desde `shared-utils.js`.
+
+---
+
+## Navegacion Con Teclado
+
+La lista de productos puede operarse casi sin mouse:
+
+| Tecla | Accion |
+|-------|--------|
+| `Flecha arriba/abajo` | Mover la fila activa |
+| `Home` / `End` | Ir al primer o ultimo producto visible |
+| `Espacio` | Marcar o desmarcar la fila activa |
+| `Enter` | Editar la fila activa en modo Admin |
+| `Ctrl+P` | Imprimir la seleccion; si no hay seleccion, usa la fila activa |
+| Click en nombre | Editar producto en modo Admin |
+
+---
+
+## Seguridad
+
+| Medida | Implementacion |
+|--------|----------------|
+| `contextIsolation` | Renderer sin acceso directo a Node.js |
+| Preload reducido | Solo expone acciones especificas necesarias |
+| Token local | Electron genera `FULLPARTY_API_TOKEN` y el renderer envia `X-Fullparty-Token` |
+| CORS restringido | No queda abierto con `*` |
+| PIN Admin | Hash SHA-256 en Web Crypto |
+| Auto-lock | Modo Admin vuelve a Cajero tras inactividad |
+| `.env` ignorado | `.env` y `.env.release` no se trackean |
+
+Nota: el token local protege la API cuando la app arranca desde Electron. En tests o ejecucion directa sin `FULLPARTY_API_TOKEN`, el backend permite llamadas para facilitar desarrollo controlado.
+
+---
+
+## API
+
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| GET | `/health` | Estado del backend |
+| GET | `/version` | Version del backend |
+| GET | `/system/status` | Diagnostico DB/Storage/config |
+| GET | `/products` | Lista completa, compatibilidad |
+| GET | `/products/page` | Lista paginada con `q`, `image_filter`, `page`, `page_size` |
+| POST | `/products` | Crear producto |
+| PUT | `/products/{id}` | Actualizar producto |
+| DELETE | `/products/{id}` | Eliminar producto |
+| GET | `/products/export/csv` | Exportar CSV |
+| POST | `/products/import/csv` | Importar CSV |
+| POST | `/products/restore` | Restaurar backup |
+| POST | `/products/{id}/image` | Subir imagen |
+| DELETE | `/products/{id}/image` | Quitar imagen |
+| GET | `/products/{id}/label` | PDF etiqueta individual |
+| POST | `/products/label-direct` | PDF con datos directos |
+| POST | `/products/batch-labels` | PDF lote |
+| POST | `/presence/heartbeat` | Registrar cliente activo |
+| GET | `/presence/users` | Usuarios activos |
+
+Las rutas operativas usan token local cuando `FULLPARTY_API_TOKEN` esta configurado.
+
+---
+
+## Publicar Una Actualizacion
+
+El ejecutable Python no se guarda en git. Se genera durante publicacion.
+
+```powershell
+.\publicar.bat
+```
+
+El script:
+
+1. Actualiza version en `package.json`.
+2. Compila `servidor_etiquetas.exe` con PyInstaller.
+3. Copia el `.exe` generado a `backend/` para empaquetarlo.
+4. Crea commit/tag de version.
+5. Ejecuta `pnpm run release`.
+6. Publica el instalador en GitHub Releases.
+
+Para probar una actualizacion antes de liberarla a todas las PCs:
+
+1. En tu PC tester, agrega esta linea al `.env` de la app:
+
+```text
+FULLPARTY_TEST_UPDATES=1
+```
+
+Tambien puedes crear el archivo:
+
+```text
+%APPDATA%\Full Party Labels\updates-tester.flag
+```
+
+2. Ejecuta `.\publicar.bat` y responde `S` cuando pregunte si quieres publicarla solo para tester.
+3. Prueba la actualizacion en la PC tester.
+4. Cuando todo este correcto, ejecuta:
+
+```powershell
+.\activar-release.bat
+```
+
+Eso convierte el pre-release en release normal para que lo vean las demas computadoras.
+
+Comportamiento en la app:
+
+- Mientras se descarga una actualizacion, aparece una campanita discreta en el header.
+- Cuando la descarga termina, la campanita muestra el panel con `Reiniciar`.
+- La actualizacion descargada no se instala automaticamente al cerrar la app; solo se instala al presionar `Reiniciar`.
+- Si el usuario no quiere actualizar en ese momento, puede presionar `Despues`; la campanita queda disponible para instalar mas tarde.
+- Si el usuario no quiere ver esa version otra vez, puede presionar `Omitir`.
+- Desde Configuracion se puede usar `Buscar actualizacion` para revisar manualmente si hay una version nueva.
+- Si la descarga falla, el panel ofrece abrir el release para descargar el instalador manualmente.
+
+Token de release:
+
+```text
+GH_TOKEN=tu_token_aqui
+```
+
+Debe vivir en `.env.release`, que esta ignorado por git.
+
+---
+
+## Instalar En Otra PC
+
+1. Descargar el instalador desde GitHub Releases.
+2. Ejecutar el instalador.
+3. Importar `.env` desde la app o copiarlo a:
+
+```text
+%APPDATA%\Full Party Labels\.env
+```
+
+4. Abrir la app.
+
+---
+
+## Notas
+
+- No subir `.env`, `.env.release`, tokens ni credenciales.
+- No usar `npm install`; usar Corepack + pnpm.
+- No trackear `backend/*.exe`; son artefactos de build.
+- `requirements-dev.txt` es el punto de entrada recomendado para CI/desarrollo.
+
+---
+
+## Licencia
+
+Uso interno - Full Party, Uruapan, Michoacan.
