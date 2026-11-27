@@ -2,9 +2,9 @@
 
 # Full Party Labels
 
-**Sistema de etiquetas con codigo de barras para tiendas Full Party**
+**Sistema de etiquetas con código de barras para tiendas Full Party**
 
-![Version](https://img.shields.io/github/v/release/riantorres1975/fullparty-labels-releases?label=version&color=7c3aed)
+![Versión estable](https://img.shields.io/github/v/release/riantorres1975/fullparty-labels-releases?label=estable&color=7c3aed)
 ![Platform](https://img.shields.io/badge/plataforma-Windows-blue?logo=windows)
 ![Electron](https://img.shields.io/badge/Electron-28-47848F?logo=electron&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -12,13 +12,42 @@
 
 </div>
 
+[Versión estable](https://github.com/riantorres1975/fullparty-labels-releases/releases/latest) · [Versión de prueba 2.7.0](https://github.com/riantorres1975/fullparty-labels-releases/releases/tag/v2.7.0) · [Cómo instalar](#instalar-en-otra-pc)
+
+El proyecto de escritorio y su historial de cambios están en el repositorio de desarrollo. [Código fuente de Full Party Labels](https://github.com/riantorres1975/fullparty-etiquetas-supabase)
+
 ---
 
-## Que Resuelve
+## Qué resuelve
 
-Full Party Labels ayuda a manejar productos que llegan sin codigo de barras, o con codigos duplicados de fabrica. La app genera SKUs/EAN-13 unicos, sincroniza el catalogo entre sucursales usando Supabase y permite imprimir etiquetas PDF optimizadas para Brother QL-800.
+Full Party Labels ayuda a gestionar productos que llegan sin código de barras o con códigos duplicados de fábrica. Puede generar un EAN-13 único, sincroniza el catálogo entre sucursales con Supabase y genera etiquetas PDF de 62 × 29 mm para la Brother QL-800.
 
-La aplicacion es de escritorio con Electron, levanta un backend local FastAPI y guarda el catalogo en Supabase PostgreSQL.
+La aplicación de escritorio usa Electron, un servidor local FastAPI y un catálogo almacenado en Supabase PostgreSQL.
+
+## Novedades en la versión 2.7.0
+
+La versión 2.7.0 está disponible en el canal de prueba para Windows de 64 bits.
+
+- Busca por nombre o código y filtra por categoría o disponibilidad de imagen. La búsqueda admite nombres sin acentos y distintas formas de escribir las medidas. Si ingresas un código de barras completo de 8, 12 o 13 dígitos, busca una coincidencia exacta.
+- En modo **Admin**, abre **Editar producto**, escribe o escanea el nuevo código y selecciona **Guardar cambios**. La app necesita conexión para verificar que el código esté disponible.
+- Imprime desde la fila del producto o marca varios y elige **Imprimir selección**. La selección se conserva al cambiar de búsqueda o de página y las etiquetas mantienen el código registrado, incluidos los ceros iniciales.
+- Al cambiar de página, la app puede mostrar los productos disponibles en la copia local mientras consulta el servidor. También reutiliza las miniaturas guardadas y actualiza los registros que cambiaron en el catálogo local.
+
+## Capturas de la interfaz
+
+Capturas de la versión 2.7.0 con productos de demostración.
+
+### Catálogo de etiquetas
+
+![Catálogo en modo Cajero con búsqueda, filtros por imagen y categoría y un botón de impresión por producto](screenshots/2.7.0/01-catalogo.png)
+
+### Edición de código de barras
+
+![Formulario Editar producto en modo Admin con el código actual y el campo para ingresar el código nuevo](screenshots/2.7.0/02-editar-codigo.png)
+
+### Impresión por lote
+
+![Ventana para generar el PDF de dos productos seleccionados con tres etiquetas por producto](screenshots/2.7.0/03-impresion-por-lote.png)
 
 ---
 
@@ -32,7 +61,7 @@ La aplicacion es de escritorio con Electron, levanta un backend local FastAPI y 
 | Python | 3.12 recomendado |
 | Base de datos | Supabase PostgreSQL |
 | Storage | Supabase Storage (`product-images`) |
-| Etiquetas | ReportLab + python-barcode |
+| Etiquetas | ReportLab |
 | Tests | pytest + Vitest |
 | Lint | Ruff + ESLint |
 | Distribucion | electron-builder + electron-updater |
@@ -62,11 +91,13 @@ fullparty-etiquetas/
 |-- preload.js                 # contextBridge seguro
 |-- index.html                 # UI principal
 |-- css/
-|   `-- styles.css
+|   |-- styles.css
+|   |-- workspace.css         # Catálogo y editor de productos
+|   |-- tailwind.css          # Entrada del compilador
+|   `-- utilities.css         # Utilidades Tailwind compiladas
 |-- js/
 |   |-- app.js                 # Init y listeners
 |   |-- i18n.js
-|   |-- tailwind-cdn.js        # Tailwind local/offline
 |   |-- xlsx.full.min.js       # SheetJS local/offline
 |   `-- modules/
 |       |-- shared-utils.js    # Utilidades puras compartidas/testeables
@@ -98,7 +129,9 @@ fullparty-etiquetas/
 |   |-- test_endpoints.py
 |   |-- test_pdf_label.py
 |   |-- test_validation.py
-|   `-- frontend/test_utils.test.js
+|   `-- frontend/
+|       |-- test_utils.test.js
+|       `-- test_product_search.test.js
 |-- requirements.txt
 |-- requirements-dev.txt
 |-- package.json
@@ -144,6 +177,8 @@ corepack pnpm start
 ```
 
 Electron levanta automaticamente el backend local en `127.0.0.1:8000`.
+
+Después de cambiar clases de Tailwind en la interfaz, ejecuta `corepack pnpm run build:styles` para regenerar `css/utilities.css`. Los comandos de empaquetado ya regeneran esa hoja de estilos.
 
 ---
 
@@ -197,15 +232,10 @@ py -3.12 -m ruff check .
 corepack pnpm exec eslint main.js preload.js js/app.js js/modules/
 ```
 
-Cobertura actual:
+La versión 2.7.0 se validó con 123 pruebas automatizadas.
 
-- 64 tests Python.
-- 35 tests frontend.
-- Endpoints FastAPI.
-- Validaciones Pydantic.
-- PDF de etiquetas.
-- Barcodes.
-- Utilidades frontend reales desde `shared-utils.js`.
+- 73 pruebas de Python para la API, la validación de datos, los códigos de barras y los PDF de etiquetas.
+- 50 pruebas de frontend para la búsqueda de productos y otras utilidades compartidas.
 
 ---
 
@@ -232,7 +262,7 @@ La lista de productos puede operarse casi sin mouse:
 | Preload reducido | Solo expone acciones especificas necesarias |
 | Token local | Electron genera `FULLPARTY_API_TOKEN` y el renderer envia `X-Fullparty-Token` |
 | CORS restringido | No queda abierto con `*` |
-| PIN Admin | Hash SHA-256 en Web Crypto |
+| PIN Admin | PBKDF2 con SHA-256 y salt en Web Crypto |
 | Auto-lock | Modo Admin vuelve a Cajero tras inactividad |
 | `.env` ignorado | `.env` y `.env.release` no se trackean |
 
@@ -248,9 +278,9 @@ Nota: el token local protege la API cuando la app arranca desde Electron. En tes
 | GET | `/version` | Version del backend |
 | GET | `/system/status` | Diagnostico DB/Storage/config |
 | GET | `/products` | Lista completa, compatibilidad |
-| GET | `/products/page` | Lista paginada con `q`, `image_filter`, `page`, `page_size` |
+| GET | `/products/page` | Lista paginada con `q`, `image_filter`, `category`, `page` y `page_size` |
 | POST | `/products` | Crear producto |
-| PUT | `/products/{id}` | Actualizar producto |
+| PUT | `/products/{id}` | Actualizar producto, incluido `sku` |
 | DELETE | `/products/{id}` | Eliminar producto |
 | GET | `/products/export/csv` | Exportar CSV |
 | POST | `/products/import/csv` | Importar CSV |
@@ -282,7 +312,9 @@ El script:
 3. Copia el `.exe` generado a `backend/` para empaquetarlo.
 4. Crea commit/tag de version.
 5. Ejecuta `pnpm run release`.
-6. Publica el instalador en GitHub Releases.
+6. Publica el instalador en GitHub Releases como versión de prueba.
+
+Las nuevas versiones llegan primero a los equipos con el canal de prueba habilitado.
 
 Para probar una actualizacion antes de liberarla a todas las PCs:
 
@@ -298,7 +330,7 @@ Tambien puedes crear el archivo:
 %APPDATA%\Full Party Labels\updates-tester.flag
 ```
 
-2. Ejecuta `.\publicar.bat` y responde `S` cuando pregunte si quieres publicarla solo para tester.
+2. Ejecuta `.\publicar.bat` para publicar la versión de prueba.
 3. Prueba la actualizacion en la PC tester.
 4. Cuando todo este correcto, ejecuta:
 
@@ -306,7 +338,7 @@ Tambien puedes crear el archivo:
 .\activar-release.bat
 ```
 
-Eso convierte el pre-release en release normal para que lo vean las demas computadoras.
+Eso convierte la versión de prueba en estable y la ofrece a los demás equipos.
 
 Comportamiento en la app:
 
@@ -328,17 +360,15 @@ Debe vivir en `.env.release`, que esta ignorado por git.
 
 ---
 
-## Instalar En Otra PC
+## Instalar en otra PC
 
-1. Descargar el instalador desde GitHub Releases.
-2. Ejecutar el instalador.
-3. Importar `.env` desde la app o copiarlo a:
+1. Abre la página de la versión que vas a instalar y descarga el archivo `Full-Party-Labels-Setup-<versión>.exe` en **Assets**.
+2. Ejecuta el instalador y abre la aplicación.
+3. Si estás configurando la app por primera vez, abre **Configuración → Importar .env** o copia el archivo a esta ubicación.
 
 ```text
 %APPDATA%\Full Party Labels\.env
 ```
-
-4. Abrir la app.
 
 ---
 
