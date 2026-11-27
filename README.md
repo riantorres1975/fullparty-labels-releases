@@ -12,7 +12,7 @@
 
 </div>
 
-[Versión estable](https://github.com/riantorres1975/fullparty-labels-releases/releases/latest) · [Versión de prueba 2.7.0](https://github.com/riantorres1975/fullparty-labels-releases/releases/tag/v2.7.0) · [Cómo instalar](#instalar-en-otra-pc)
+[Versión estable](https://github.com/riantorres1975/fullparty-labels-releases/releases/latest) · [Versión de prueba 2.7.1](https://github.com/riantorres1975/fullparty-labels-releases/releases/tag/v2.7.1) · [Cómo instalar](#instalar-en-otra-pc)
 
 El proyecto de escritorio y su historial de cambios están en el repositorio de desarrollo. [Código fuente de Full Party Labels](https://github.com/riantorres1975/fullparty-etiquetas-supabase)
 
@@ -26,7 +26,7 @@ La aplicación de escritorio usa Electron, un servidor local FastAPI y un catál
 
 ## Novedades en la versión 2.7.0
 
-La versión 2.7.0 está disponible en el canal de prueba para Windows de 64 bits.
+La versión de prueba 2.7.1 incluye estas mejoras y corrige el error de arranque del instalador de la 2.7.0 en Windows de 64 bits.
 
 - Busca por nombre o código y filtra por categoría o disponibilidad de imagen. La búsqueda admite nombres sin acentos y distintas formas de escribir las medidas. Si ingresas un código de barras completo de 8, 12 o 13 dígitos, busca una coincidencia exacta.
 - En modo **Admin**, abre **Editar producto**, escribe o escanea el nuevo código y selecciona **Guardar cambios**. La app necesita conexión para verificar que el código esté disponible.
